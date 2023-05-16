@@ -20,6 +20,7 @@ export class MainPlayerComponent implements OnInit, OnChanges {
   @Input() playerConfig: QumlPlayerConfig;
   @Output() playerEvent = new EventEmitter<any>();
   @Output() telemetryEvent = new EventEmitter<any>();
+  @Output() userResponse = new EventEmitter<any>();
 
   @ViewChild(SectionPlayerComponent) sectionPlayer!: SectionPlayerComponent;
 
@@ -81,6 +82,7 @@ export class MainPlayerComponent implements OnInit, OnChanges {
   nextContent: NextContent;
   disabledHandle: any;
   subscription: Subscription;
+  questionSetEvaluable: boolean = false;
 
   constructor(public viewerService: ViewerService, private utilService: UtilService) { }
 
@@ -203,6 +205,7 @@ export class MainPlayerComponent implements OnInit, OnChanges {
     this.showEndPage = this.playerConfig.metadata?.showEndPage?.toLowerCase() !== 'no';
     this.parentConfig.showFeedback = this.showFeedBack = this.playerConfig.metadata?.showFeedback?.toLowerCase() === 'yes';
     this.parentConfig.sideMenuConfig = { ...this.parentConfig.sideMenuConfig, ...this.playerConfig.config.sideMenu };
+    this.questionSetEvaluable = this.playerConfig.metadata?.evaluable;
     if (this.playerConfig?.context?.userData) {
       const firstName = this.playerConfig.context.userData?.firstName ?? '';
       const lastName = this.playerConfig.context.userData?.lastName ?? '';
@@ -258,7 +261,9 @@ export class MainPlayerComponent implements OnInit, OnChanges {
     /* istanbul ignore else */
     if (this.parentConfig.isSectionsAvailable) {
       const activeSectionIndex = this.getActiveSectionIndex();
-      this.updateSectionScore(activeSectionIndex);
+      if(!this.questionSetEvaluable) {
+        this.updateSectionScore(activeSectionIndex);
+      }
     }
     this.getSummaryObject();
     this.loadScoreBoard = true;
@@ -269,11 +274,12 @@ export class MainPlayerComponent implements OnInit, OnChanges {
     if (event.isDurationEnded) {
       this.isDurationExpired = true;
     }
-
     if (this.parentConfig.isSectionsAvailable) {
       const activeSectionIndex = this.getActiveSectionIndex();
-      this.updateSectionScore(activeSectionIndex);
       this.setNextSection(event, activeSectionIndex);
+      if(!this.questionSetEvaluable) {
+        this.updateSectionScore(activeSectionIndex);
+      }
     } else {
       this.prepareEnd(event);
     }
@@ -341,9 +347,12 @@ export class MainPlayerComponent implements OnInit, OnChanges {
 
   prepareEnd(event) {
     this.viewerService.pauseVideo();
-    this.calculateScore();
+    if(!this.questionSetEvaluable) {      
+      this.calculateScore();
+    }
     this.setDurationSpent();
     this.getSummaryObject();
+    this.userResponse.emit(event.assessmentResponse);
     if (this.parentConfig.requiresSubmit && !this.isDurationExpired) {
       this.loadScoreBoard = true;
     } else {
@@ -428,7 +437,9 @@ export class MainPlayerComponent implements OnInit, OnChanges {
   }
 
   exitContent(event) {
-    this.calculateScore();
+    if(!this.questionSetEvaluable) {
+      this.calculateScore();
+    }
     /* istanbul ignore else */
     if (event?.type === 'EXIT') {
       this.viewerService.raiseHeartBeatEvent(eventName.endPageExitClicked, TelemetryType.interact, pageId.endPage);
@@ -463,12 +474,13 @@ export class MainPlayerComponent implements OnInit, OnChanges {
   }
 
   onScoreBoardLoaded(event) {
-    if (event?.scoreBoardLoaded) {
+    if (event?.scoreBoardLoaded && !this.questionSetEvaluable) {
       this.calculateScore();
     }
   }
 
   onScoreBoardSubmitted() {
+    //On submit call QuestionResponseValidateAPI here
     this.endPageReached = true;
     this.getSummaryObject();
     this.setDurationSpent();
@@ -559,7 +571,9 @@ export class MainPlayerComponent implements OnInit, OnChanges {
 
   @HostListener('window:beforeunload')
   ngOnDestroy() {
-    this.calculateScore();
+    if(!this.questionSetEvaluable) {
+      this.calculateScore();
+    }
     this.getSummaryObject();
     /* istanbul ignore else */
     if (this.isSummaryEventRaised === false) {

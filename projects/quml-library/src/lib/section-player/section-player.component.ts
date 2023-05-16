@@ -90,6 +90,8 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
   isAssessEventRaised = false;
   isShuffleQuestions = false;
   shuffleOptions: boolean;
+  questionSetEvaluable: boolean = false;
+  assessmentResponse = [];
 
   constructor(
     public viewerService: ViewerService,
@@ -121,7 +123,6 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
     this.viewerService.qumlQuestionEvent
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
-
         if (res?.error) {
           const { traceId } = this.sectionConfig?.config;
           if (navigator.onLine && this.viewerService.isAvailableLocally) {
@@ -190,6 +191,8 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
       this.setImageZoom();
       this.loadView = true;
       this.removeAttribute();
+      //user response
+      this.assessmentResponse = [];
 
       setTimeout(() => {
         const menuBtn = document.querySelector('#overlay-button') as HTMLElement;
@@ -208,6 +211,8 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
     this.timeLimit = this.sectionConfig.metadata?.timeLimits?.maxTime || 0;
     this.warningTime = this.sectionConfig.metadata?.timeLimits?.warningTime || 0;
     this.showTimer = this.sectionConfig.metadata?.showTimer?.toLowerCase() !== 'no';
+    //server-level-validation
+    this.questionSetEvaluable = this.sectionConfig.metadata?.evaluable;
 
     if (this.sectionConfig.metadata?.showFeedback) {
       this.showFeedBack = this.sectionConfig.metadata?.showFeedback?.toLowerCase() !== 'no'; // prioritize the section level config
@@ -300,7 +305,7 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
     }
 
     /* istanbul ignore else */
-    if (this.myCarousel.isLast(this.myCarousel.getCurrentSlideIndex()) || this.noOfQuestions === this.myCarousel.getCurrentSlideIndex()) {
+    if ((this.myCarousel.isLast(this.myCarousel.getCurrentSlideIndex()) || this.noOfQuestions === this.myCarousel.getCurrentSlideIndex()) && !this.questionSetEvaluable) {
       this.calculateScore();
     }
 
@@ -434,7 +439,7 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
   updateScoreForShuffledQuestion() {
     const currentIndex = this.myCarousel.getCurrentSlideIndex() - 1;
 
-    if (this.isShuffleQuestions) {
+    if (this.isShuffleQuestions && !this.questionSetEvaluable) {
       this.updateScoreBoard(currentIndex, 'correct', undefined, DEFAULT_SCORE);
     }
   }
@@ -527,13 +532,17 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
 
     // This optionSelected comes empty whenever the try again is clicked on feedback popup
     if (_.isEmpty(optionSelected?.option)) {
+      this.updateScoreBoard(currentIndex, 'skipped');
       this.optionSelectedObj = undefined;
       this.currentSolutions = undefined;
-      this.updateScoreBoard(currentIndex, 'skipped');
     } else {
+      if(!this.questionSetEvaluable) {
+        this.currentSolutions = !_.isEmpty(optionSelected.solutions) ? optionSelected.solutions : undefined;
+      } else {
+        this.currentSolutions = undefined;
+      }
       this.optionSelectedObj = optionSelected;
       this.isAssessEventRaised = false;
-      this.currentSolutions = !_.isEmpty(optionSelected.solutions) ? optionSelected.solutions : undefined;
     }
     this.media = this.questions[this.myCarousel.getCurrentSlideIndex() - 1].media;
 
@@ -599,6 +608,7 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
       score: this.calculateScore(),
       durationSpent: this.utilService.getTimeSpentText(this.initialTime),
       slideIndex: this.myCarousel.getCurrentSlideIndex(),
+      assessmentResponse: this.assessmentResponse,
       isDurationEnded,
     };
     if (jumpToSection) {
@@ -674,48 +684,77 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
     if (this.optionSelectedObj) {
       this.currentQuestion = selectedQuestion.body;
       this.currentOptions = selectedQuestion.interactions[key].options;
-
-      if (option.cardinality === 'single') {
-        const correctOptionValue = Number(selectedQuestion.responseDeclaration[key].correctResponse.value);
-
-        this.showAlert = true;
-        if (option.option?.value === correctOptionValue) {
-          const currentScore = this.getScore(currentIndex, key, true);
-          if (!this.isAssessEventRaised) {
-            this.isAssessEventRaised = true;
-            this.viewerService.raiseAssesEvent(edataItem, currentIndex + 1, 'Yes', currentScore, [option.option], this.slideDuration);
-          }
-          this.alertType = 'correct';
-          if (this.showFeedBack)
-            this.correctFeedBackTimeOut(type);
-          this.updateScoreBoard(currentIndex, 'correct', undefined, currentScore);
-        } else {
-          const currentScore = this.getScore(currentIndex, key, false, option);
-          this.alertType = 'wrong';
-          const classType = this.progressBarClass[currentIndex].class === 'partial' ? 'partial' : 'wrong';
-          this.updateScoreBoard(currentIndex, classType, selectedOptionValue, currentScore);
-
-          /* istanbul ignore else */
-          if (!this.isAssessEventRaised) {
-            this.isAssessEventRaised = true;
-            this.viewerService.raiseAssesEvent(edataItem, currentIndex + 1, 'No', 0, [option.option], this.slideDuration);
+      if (!this.questionSetEvaluable) {
+        if (option.cardinality === 'single') {
+          const correctOptionValue = Number(selectedQuestion.responseDeclaration[key].correctResponse.value);
+  
+          this.showAlert = true;
+          if (option.option?.value === correctOptionValue) {
+            const currentScore = this.getScore(currentIndex, key, true);
+            if (!this.isAssessEventRaised) {
+              this.isAssessEventRaised = true;
+              this.viewerService.raiseAssesEvent(edataItem, currentIndex + 1, 'Yes', currentScore, [option.option], this.slideDuration);
+            }
+            this.alertType = 'correct';
+            if (this.showFeedBack)
+              this.correctFeedBackTimeOut(type);
+            this.updateScoreBoard(currentIndex, 'correct', undefined, currentScore);
+          } else {
+            const currentScore = this.getScore(currentIndex, key, false, option);
+            this.alertType = 'wrong';
+            const classType = this.progressBarClass[currentIndex].class === 'partial' ? 'partial' : 'wrong';
+            this.updateScoreBoard(currentIndex, classType, selectedOptionValue, currentScore);
+  
+            /* istanbul ignore else */
+            if (!this.isAssessEventRaised) {
+              this.isAssessEventRaised = true;
+              this.viewerService.raiseAssesEvent(edataItem, currentIndex + 1, 'No', 0, [option.option], this.slideDuration);
+            }
           }
         }
-      }
-      if (option.cardinality === 'multiple') {
-        const responseDeclaration = this.questions[currentIndex].responseDeclaration;
-        const currentScore = this.utilService.getMultiselectScore(option.option, responseDeclaration);
-        this.showAlert = true;
-        if (currentScore === 0) {
-          this.alertType = 'wrong';
-          this.updateScoreBoard(currentIndex, 'wrong');
-        } else {
-          this.updateScoreBoard(currentIndex, 'correct', undefined, currentScore);
-          if (this.showFeedBack)
-            this.correctFeedBackTimeOut(type);
-          this.alertType = 'correct';
+        if (option.cardinality === 'multiple') {
+          const responseDeclaration = this.questions[currentIndex].responseDeclaration;
+          const currentScore = this.utilService.getMultiselectScore(option.option, responseDeclaration);
+          this.showAlert = true;
+          if (currentScore === 0) {
+            this.alertType = 'wrong';
+            this.updateScoreBoard(currentIndex, 'wrong');
+          } else {
+            this.updateScoreBoard(currentIndex, 'correct', undefined, currentScore);
+            if (this.showFeedBack)
+              this.correctFeedBackTimeOut(type);
+            this.alertType = 'correct';
+          }
+        }
+      } else {
+        let validateObj: any = {};
+        let available: boolean = false;
+
+        //Update userResponse if its already exists
+        this.assessmentResponse.forEach(response=> {
+          if(response.identifier == selectedQuestion.identifier) {
+            available = true;
+            response['userResponse'] = Array.isArray(this.optionSelectedObj.option)? this.optionSelectedObj.option: Object.assign([], this.optionSelectedObj.option);
+          }
+        });
+
+        //Insert userResponse if its not exists
+        if(!available) {
+          validateObj = {
+            identifier: selectedQuestion.identifier,
+            userResponse: Array.isArray(this.optionSelectedObj.option)? this.optionSelectedObj.option: Object.assign([], this.optionSelectedObj.option)
+          }
+          this.assessmentResponse.push(validateObj);
+        } 
+        this.updateScoreBoard(currentIndex, 'correct', undefined, 0);
+
+        //Raise Assess Event, need to modify
+        if (!this.isAssessEventRaised) {
+          this.isAssessEventRaised = true;
+          this.viewerService.raiseAssesEvent(edataItem, currentIndex + 1, 'Yes', 0, [option.option], this.slideDuration);
         }
       }
+
       this.optionSelectedObj = undefined;
     } else if ((isQuestionSkipAllowed) || isSubjectiveQuestion || onStartPage || isActive) {
       this.nextSlide();
