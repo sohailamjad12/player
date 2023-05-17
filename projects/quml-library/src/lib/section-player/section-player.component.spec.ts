@@ -520,6 +520,82 @@ describe('SectionPlayerComponent', () => {
     component.validateSelectedOption(option, "next");
   });
 
+  it('store response if server evaluable field is true', () => {
+    component.questionSetEvaluable = true;
+    component.assessmentResponse = [];
+    component.myCarousel = myCarousel;
+    const option = {
+      "name": "optionSelect",
+      "option": {
+        "label": "<p>Narendra Modi</p>",
+        "value": 1,
+        "selected": true
+      },
+      "cardinality": "single",
+      "solutions": []
+    }
+    component.optionSelectedObj = {
+      "name": "optionSelect",
+      "option": {
+        "label": "<p>Narendra Modi</p>",
+        "value": 1,
+        "selected": true
+      },
+      "cardinality": "single",
+      "solutions": []
+    }
+    component.questions = mockSectionQuestions;
+    component.parentConfig = mockParentConfig;
+    component.sectionConfig = mockSectionConfig;
+    component.validateSelectedOption(option, "next");
+    component.assessmentResponse = [{
+      "identifier": "do_21348431640099225615",
+      "userResponse": [{
+        "label": "<p>Narendra Modi</p>",
+        "value": 1,
+        "selected": true
+      }]
+    }];
+    component.validateSelectedOption(option, "next");
+  });
+
+  it('update user response if its already exists', () => {
+    component.questionSetEvaluable = true;
+    component.myCarousel = myCarousel;
+    component.assessmentResponse = [{
+      "identifier": "do_21348431640099225615",
+      "userResponse": [{
+        "label": "<p>Narendra Modi</p>",
+        "value": 1,
+        "selected": true
+      }]
+    }];
+    const option = {
+      "name": "optionSelect",
+      "option": {
+        "label": "<p>Narendra Modi</p>",
+        "value": 1,
+        "selected": true
+      },
+      "cardinality": "single",
+      "solutions": []
+    }
+    component.optionSelectedObj = {
+      "name": "optionSelect",
+      "option": {
+        "label": "<p>Narendra Modi</p>",
+        "value": 1,
+        "selected": true
+      },
+      "cardinality": "single",
+      "solutions": []
+    }
+    component.questions = mockSectionQuestions;
+    component.parentConfig = mockParentConfig;
+    component.sectionConfig = mockSectionConfig;
+    component.validateSelectedOption(option, "next");
+  })
+
   it('should hide the popup once the time is over', fakeAsync(() => {
     component.infoPopupTimeOut();
     tick(2000);
