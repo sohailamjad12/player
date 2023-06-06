@@ -36,8 +36,8 @@ export class DataService {
     }));
   }
 
-  getServerEvaluableQuestionSet(payload){
-   return this.httpClient.post(`${ApiEndPoints.getQuestionSetHierarchyWithPost}`, payload); 
+  getQuestionSetHierarchyByPost(payload, contentId){
+   return this.httpClient.post(`${ApiEndPoints.getQuestionSetHierarchy}${contentId}`, payload); 
   }
 
   getQuestionSet(identifier: string) {

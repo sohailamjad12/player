@@ -9,7 +9,7 @@ import * as uuid from 'uuid';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  contentId = 'do_1137978322919096321137'; // do_213257772024733696115 do_2135552779830722561884 do_2135557748660469761931  do_113791502574157824197
+  contentId = 'do_1138113501713530881128'; // do_213257772024733696115 do_2135552779830722561884 do_2135557748660469761931  do_113791502574157824197
   playerConfig: any;
   questionSetDetails: any;
   constructor(private dataService: DataService) { }
@@ -26,8 +26,8 @@ export class AppComponent implements OnInit {
       userID:'101ad6b3-502c-4ab4-a6cd-23d2ec7466b8',
       attemptID:uuid.v4(res.questionSet.identifier)
     }
-    if(res.questionSet.evaluable){
-      this.dataService.getServerEvaluableQuestionSet(reqBody).subscribe(res => {
+    if(res.questionSet.serverEvaluable){
+      this.dataService.getQuestionSetHierarchyByPost(reqBody, res.questionSet.identifier).subscribe(res => {
         this.initializePlayer(res);
       });
     } else {
