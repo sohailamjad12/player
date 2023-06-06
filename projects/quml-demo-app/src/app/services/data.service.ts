@@ -27,6 +27,19 @@ export class DataService {
     }));
   }
 
+  getCourse(contentId: string){
+    return this.httpClient.get(`${ApiEndPoints.getCourse}${contentId}?orgdetails=orgName,email&licenseDetails=name,description,url`).pipe(map((res: any) => {
+      if (res.result.content) {
+        return { questionSet:this.findQuestionSetObject(res.result.content.children[0]), collection: res.result.content } 
+      }
+      throwError('Invalid Response');
+    }));
+  }
+
+  getServerEvaluableQuestionSet(payload){
+   return this.httpClient.post(`${ApiEndPoints.getQuestionSetHierarchyWithPost}`, payload); 
+  }
+
   getQuestionSet(identifier: string) {
     const hierarchy = this.httpClient.get(`${ApiEndPoints.getQuestionSetHierarchy}${identifier}`);
     const questionSetResponse = this.httpClient.get(`${this.baseUrl}${ApiEndPoints.questionSetRead}${identifier}?fields=instructions`);
@@ -57,6 +70,14 @@ export class DataService {
         }
         return of(data);
       }));
+  }
+
+  findQuestionSetObject(res){
+    if(res.children[0]?.objectType !== 'QuestionSet'){
+      return this.findQuestionSetObject(res.children[0]);
+    }else {
+      return res.children[0];
+    }    
   }
 
 }
