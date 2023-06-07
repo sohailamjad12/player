@@ -20,7 +20,6 @@ export class MainPlayerComponent implements OnInit, OnChanges {
   @Input() playerConfig: QumlPlayerConfig;
   @Output() playerEvent = new EventEmitter<any>();
   @Output() telemetryEvent = new EventEmitter<any>();
-  @Output() userResponse = new EventEmitter<any>();
 
   @ViewChild(SectionPlayerComponent) sectionPlayer!: SectionPlayerComponent;
 
@@ -205,7 +204,7 @@ export class MainPlayerComponent implements OnInit, OnChanges {
     this.showEndPage = this.playerConfig.metadata?.showEndPage?.toLowerCase() !== 'no';
     this.parentConfig.showFeedback = this.showFeedBack = this.playerConfig.metadata?.showFeedback?.toLowerCase() === 'yes';
     this.parentConfig.sideMenuConfig = { ...this.parentConfig.sideMenuConfig, ...this.playerConfig.config.sideMenu };
-    this.questionSetEvaluable = this.playerConfig.metadata?.evaluable;
+    this.questionSetEvaluable = this.playerConfig.metadata?.serverEvaluable;
     if (this.playerConfig?.context?.userData) {
       const firstName = this.playerConfig.context.userData?.firstName ?? '';
       const lastName = this.playerConfig.context.userData?.lastName ?? '';
@@ -352,7 +351,6 @@ export class MainPlayerComponent implements OnInit, OnChanges {
     }
     this.setDurationSpent();
     this.getSummaryObject();
-    this.userResponse.emit(event.assessmentResponse);
     if (this.parentConfig.requiresSubmit && !this.isDurationExpired) {
       this.loadScoreBoard = true;
     } else {
@@ -480,7 +478,6 @@ export class MainPlayerComponent implements OnInit, OnChanges {
   }
 
   onScoreBoardSubmitted() {
-    //On submit call QuestionResponseValidateAPI here
     this.endPageReached = true;
     this.getSummaryObject();
     this.setDurationSpent();

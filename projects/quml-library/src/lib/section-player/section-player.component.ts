@@ -91,7 +91,6 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
   isShuffleQuestions = false;
   shuffleOptions: boolean;
   questionSetEvaluable: boolean = false;
-  assessmentResponse = [];
 
   constructor(
     public viewerService: ViewerService,
@@ -191,8 +190,6 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
       this.setImageZoom();
       this.loadView = true;
       this.removeAttribute();
-      //user response
-      this.assessmentResponse = [];
 
       setTimeout(() => {
         const menuBtn = document.querySelector('#overlay-button') as HTMLElement;
@@ -212,7 +209,7 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
     this.warningTime = this.sectionConfig.metadata?.timeLimits?.warningTime || 0;
     this.showTimer = this.sectionConfig.metadata?.showTimer?.toLowerCase() !== 'no';
     //server-level-validation
-    this.questionSetEvaluable = this.sectionConfig.metadata?.evaluable;
+    this.questionSetEvaluable = this.sectionConfig.metadata?.serverEvaluable;
 
     if (this.sectionConfig.metadata?.showFeedback) {
       this.showFeedBack = this.sectionConfig.metadata?.showFeedback?.toLowerCase() !== 'no'; // prioritize the section level config
@@ -608,7 +605,6 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
       score: this.calculateScore(),
       durationSpent: this.utilService.getTimeSpentText(this.initialTime),
       slideIndex: this.myCarousel.getCurrentSlideIndex(),
-      assessmentResponse: this.assessmentResponse,
       isDurationEnded,
     };
     if (jumpToSection) {
@@ -650,7 +646,9 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
     const onStartPage = this.startPageInstruction && this.myCarousel.getCurrentSlideIndex() === 0;
     const isActive = !this.optionSelectedObj && this.active;
     const selectedQuestion = this.questions[currentIndex];
-    const key = selectedQuestion.responseDeclaration ? this.utilService.getKeyValue(Object.keys(selectedQuestion.responseDeclaration)) : '';
+    //const key = selectedQuestion.responseDeclaration ? this.utilService.getKeyValue(Object.keys(selectedQuestion.responseDeclaration)) : '';
+    //Remove below line once responseDeclaration property updated and uncomment above line
+    const key = selectedQuestion.responseDeclaration ? 'response1' : '';
     this.slideDuration = Math.round((new Date().getTime() - this.initialSlideDuration) / 1000);
     const getParams = () => {
       if (selectedQuestion.qType.toUpperCase() === 'MCQ' && selectedQuestion?.editorState?.options) {
@@ -666,7 +664,9 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
       'title': selectedQuestion.name,
       'desc': selectedQuestion.description,
       'type': selectedQuestion.qType.toLowerCase(),
-      'maxscore': key.length === 0 ? 0 : selectedQuestion.responseDeclaration[key].maxScore || 0,
+      // 'maxscore': key.length === 0 ? 0 : selectedQuestion.responseDeclaration[key].maxScore || 0,
+      //Remove below line once responseDeclaration property updated and uncomment above line
+      'maxscore': key.length === 0 ? 0 : selectedQuestion.maxScore || 0,
       'params': getParams()
     };
 
@@ -726,32 +726,11 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
             this.alertType = 'correct';
           }
         }
-      } else {
-        let validateObj: any = {};
-        let available: boolean = false;
-
-        //Update userResponse if its already exists
-        this.assessmentResponse.forEach(response=> {
-          if(response.identifier == selectedQuestion.identifier) {
-            available = true;
-            response['userResponse'] = Array.isArray(this.optionSelectedObj.option)? this.optionSelectedObj.option: Object.assign([], this.optionSelectedObj.option);
-          }
-        });
-
-        //Insert userResponse if its not exists
-        if(!available) {
-          validateObj = {
-            identifier: selectedQuestion.identifier,
-            userResponse: Array.isArray(this.optionSelectedObj.option)? this.optionSelectedObj.option: Object.assign([], this.optionSelectedObj.option)
-          }
-          this.assessmentResponse.push(validateObj);
-        } 
+      } else { 
         this.updateScoreBoard(currentIndex, 'correct', undefined, 0);
-
-        //Raise Assess Event, need to modify
         if (!this.isAssessEventRaised) {
           this.isAssessEventRaised = true;
-          this.viewerService.raiseAssesEvent(edataItem, currentIndex + 1, 'Yes', 0, [option.option], this.slideDuration);
+          this.viewerService.raiseAssesEvent(edataItem, currentIndex + 1, '', 0, [option.option], this.slideDuration);
         }
       }
 

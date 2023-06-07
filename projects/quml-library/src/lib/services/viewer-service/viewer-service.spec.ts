@@ -137,12 +137,24 @@ describe('ViewerService', () => {
     expect(qumlLibraryService.error).toHaveBeenCalled();
   });
 
-  it('should raiseAssesEvent', () => {
+  it('should raiseAssesEvent for server evaluable false', () => {
     const viewerService = TestBed.inject(ViewerService);
     const qumlLibraryService = TestBed.inject(QumlLibraryService);
+    viewerService.questionSetEvaluable = false;
     spyOn(viewerService.qumlPlayerEvent, 'emit');
     spyOn(qumlLibraryService, 'startAssesEvent');
     viewerService.raiseAssesEvent(mockData.questionData, 1, "Yes", 1, mockData.resValues, 2);
+    expect(viewerService.qumlPlayerEvent.emit).toHaveBeenCalled();
+    expect(qumlLibraryService.startAssesEvent).toHaveBeenCalled();
+  });
+
+  it('should raiseAssesEvent for server evaluable true', () => {
+    const viewerService = TestBed.inject(ViewerService);
+    const qumlLibraryService = TestBed.inject(QumlLibraryService);
+    viewerService.questionSetEvaluable = true;
+    spyOn(viewerService.qumlPlayerEvent, 'emit');
+    spyOn(qumlLibraryService, 'startAssesEvent');
+    viewerService.raiseAssesEvent(mockData.questionData, 1, "", 0, mockData.resValues, 2);
     expect(viewerService.qumlPlayerEvent.emit).toHaveBeenCalled();
     expect(qumlLibraryService.startAssesEvent).toHaveBeenCalled();
   });
