@@ -1,18 +1,18 @@
 {
   "/api/*": {
-    "target": "https://uphrh.in",
+    "target": "https://staging.sunbirded.org",
     "secure": false,
     "logLevel": "debug",
     "changeOrigin": true
   },
   "/learner/*": {
-    "target": "https://uphrh.in",
+    "target": "https://staging.sunbirded.org",
     "secure": false,
     "logLevel": "debug",
     "changeOrigin": true
   },
   "/assets/*": {
-    "target": "https://uphrh.in",
+    "target": "https://staging.sunbirded.org",
     "secure": false,
     "logLevel": "debug",
     "changeOrigin": true

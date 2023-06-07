@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  baseUrl: 'https://uphrh.in/',
+  baseUrl: 'https://staging.sunbirded.org/',
 };
 
 /*
