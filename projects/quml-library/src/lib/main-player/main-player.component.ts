@@ -348,6 +348,8 @@ export class MainPlayerComponent implements OnInit, OnChanges {
     this.viewerService.pauseVideo();
     if(!this.questionSetEvaluable) {      
       this.calculateScore();
+    } else {
+      this.finalScore = 0;
     }
     this.setDurationSpent();
     this.getSummaryObject();
@@ -437,6 +439,8 @@ export class MainPlayerComponent implements OnInit, OnChanges {
   exitContent(event) {
     if(!this.questionSetEvaluable) {
       this.calculateScore();
+    } else {
+      this.finalScore = 0;
     }
     /* istanbul ignore else */
     if (event?.type === 'EXIT') {
@@ -570,6 +574,8 @@ export class MainPlayerComponent implements OnInit, OnChanges {
   ngOnDestroy() {
     if(!this.questionSetEvaluable) {
       this.calculateScore();
+    } else {
+      this.finalScore = 0;
     }
     this.getSummaryObject();
     /* istanbul ignore else */
