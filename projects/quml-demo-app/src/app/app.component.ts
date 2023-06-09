@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { samplePlayerConfig } from './quml-library-data';
 import { DataService } from './services/data.service';
+import * as uuid from 'uuid';
 
 @Component({
   selector: 'app-root',
@@ -8,14 +9,22 @@ import { DataService } from './services/data.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  contentId = 'do_2135557748660469761931'; // do_213257772024733696115 do_2135552779830722561884 do_2135557748660469761931
+  // contentId = 'do_11381197399589683218'; // do_213257772024733696115 do_2135552779830722561884 do_2135557748660469761931,do_113807105203314688117
+  contentId = 'do_113812213470920704115';
+  //do_11381197399589683218 serverEvaluable field is true
+  //course id do_1138113501713530881128, do_113812213470920704115
   playerConfig: any;
+  telemetryEvents: any = [];
+  questionSetDetails: any;
 
   constructor(private dataService: DataService) { }
 
   ngOnInit() {
-    this.dataService.getQuestionSet(this.contentId).subscribe(res => {
-      this.initializePlayer(res);
+    // this.dataService.getQuestionSet(this.contentId).subscribe(res => {
+    //   this.initializePlayer(res);
+    // });
+    this.dataService.getCourse(this.contentId).subscribe(res => {
+      this.getQuestionSetData(res)
     });
   }
 
@@ -35,7 +44,7 @@ export class AppComponent implements OnInit {
   }
 
   getPlayerEvents(event) {
-    console.log('get player events', JSON.stringify(event));
+    console.log('get player events', JSON.parse(JSON.stringify(event)));
 
     // Store the metaData locally
     if (event.eid === 'END') {
@@ -46,6 +55,26 @@ export class AppComponent implements OnInit {
   }
 
   getTelemetryEvents(event) {
-    console.log('event is for telemetry', JSON.stringify(event));
+    this.telemetryEvents.push(JSON.parse(JSON.stringify(event)));
+    console.log('event is for telemetry', this.telemetryEvents);
   }
+
+  getQuestionSetData(res:any){
+    const reqBody = {
+      contentID:res.questionSet.identifier,
+      collectionID:res.collection.identifier,
+      userID:'101ad6b3-502c-4ab4-a6cd-23d2ec7466b8',
+      attemptID:uuid.v4(res.questionSet.identifier)
+    }
+    if(res.questionSet.serverEvaluable){
+      this.dataService.getServerEvaluableQuestionSet(reqBody, res.questionSet.identifier).subscribe(res => {
+        this.initializePlayer(res);
+      });
+    } else {
+      this.dataService.getQuestionSet(this.contentId).subscribe(res => {
+        this.initializePlayer(res);
+      });
+    }
+  }
+
 }

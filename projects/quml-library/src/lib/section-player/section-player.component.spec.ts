@@ -520,6 +520,35 @@ describe('SectionPlayerComponent', () => {
     component.validateSelectedOption(option, "next");
   });
 
+  it('raise assess event if server evaluable is true', () => {
+    component.questionSetEvaluable = true;
+    component.myCarousel = myCarousel;
+    const option = {
+      "name": "optionSelect",
+      "option": {
+        "label": "<p>Narendra Modi</p>",
+        "value": 1,
+        "selected": true
+      },
+      "cardinality": "single",
+      "solutions": []
+    }
+    component.optionSelectedObj = {
+      "name": "optionSelect",
+      "option": {
+        "label": "<p>Narendra Modi</p>",
+        "value": 1,
+        "selected": true
+      },
+      "cardinality": "single",
+      "solutions": []
+    }
+    component.questions = mockSectionQuestions;
+    component.parentConfig = mockParentConfig;
+    component.sectionConfig = mockSectionConfig;
+    component.validateSelectedOption(option, "next");
+  });
+
   it('should hide the popup once the time is over', fakeAsync(() => {
     component.infoPopupTimeOut();
     tick(2000);
