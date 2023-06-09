@@ -15,7 +15,7 @@
         <div class="current-slide" *ngIf="currentSlideIndex !== 0">
           {{myCarousel.getCurrentSlideIndex()}}/{{noOfQuestions}}
         </div>
-        <div *ngIf="currentSolutions && showUserSolution">
+        <div *ngIf="currentSolutions && showUserSolution && !questionSetEvaluable">
           <quml-ans (click)="getSolutions()" (keydown)="onAnswerKeyDown($event)"></quml-ans>
         </div>
       </div>
@@ -119,7 +119,7 @@
     </div>
   </div>
 
-  <quml-alert *ngIf="showAlert && showFeedBack" [alertType]="alertType" [isHintAvailable]="showHints"
+  <quml-alert *ngIf="showAlert && showFeedBack && !questionSetEvaluable" [alertType]="alertType" [isHintAvailable]="showHints"
     [showSolutionButton]="showUserSolution && currentSolutions" (showSolution)="viewSolution()" (showHint)="viewHint()"
     (closeAlert)="closeAlertBox($event)"></quml-alert>
 
