@@ -476,8 +476,12 @@ export class MainPlayerComponent implements OnInit, OnChanges {
   }
 
   onScoreBoardLoaded(event) {
-    if (event?.scoreBoardLoaded && !this.questionSetEvaluable) {
-      this.calculateScore();
+    if (event?.scoreBoardLoaded) {
+      if(!this.questionSetEvaluable) {
+        this.calculateScore();
+      } else {
+        this.finalScore = 0
+      }
     }
   }
 

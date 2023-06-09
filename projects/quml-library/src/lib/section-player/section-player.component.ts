@@ -646,9 +646,7 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
     const onStartPage = this.startPageInstruction && this.myCarousel.getCurrentSlideIndex() === 0;
     const isActive = !this.optionSelectedObj && this.active;
     const selectedQuestion = this.questions[currentIndex];
-    //const key = selectedQuestion.responseDeclaration ? this.utilService.getKeyValue(Object.keys(selectedQuestion.responseDeclaration)) : '';
-    //Remove below line once responseDeclaration property updated and uncomment above line
-    const key = selectedQuestion.responseDeclaration ? 'response1' : '';
+    const key = selectedQuestion.responseDeclaration ? this.utilService.getKeyValue(Object.keys(selectedQuestion.responseDeclaration)) : '';
     this.slideDuration = Math.round((new Date().getTime() - this.initialSlideDuration) / 1000);
     const getParams = () => {
       if (selectedQuestion.qType.toUpperCase() === 'MCQ' && selectedQuestion?.editorState?.options) {
@@ -664,9 +662,7 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
       'title': selectedQuestion.name,
       'desc': selectedQuestion.description,
       'type': selectedQuestion.qType.toLowerCase(),
-      // 'maxscore': key.length === 0 ? 0 : selectedQuestion.responseDeclaration[key].maxScore || 0,
-      //Remove below line once responseDeclaration property updated and uncomment above line
-      'maxscore': key.length === 0 ? 0 : selectedQuestion.maxScore || 0,
+      'maxscore': key.length === 0 ? 0 : selectedQuestion.responseDeclaration[key].maxScore || 0,
       'params': getParams()
     };
 
@@ -947,7 +943,7 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
   }
 
   calculateScore() {
-    return this.progressBarClass.reduce((accumulator, element) => accumulator + element.score, 0);
+    return this.progressBarClass?.reduce((accumulator, element) => accumulator + element.score, 0);
   }
 
   updateScoreBoard(index, classToBeUpdated, optionValue?, score?) {

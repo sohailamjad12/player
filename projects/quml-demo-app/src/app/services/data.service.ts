@@ -37,11 +37,7 @@ export class DataService {
   }
 
   getServerEvaluableQuestionSet(payload, identifier){
-    const headers = new HttpHeaders({
-      'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJSR3RkMkZzeG1EMnJER3I4dkJHZ0N6MVhyalhZUzBSSyJ9.kMLn6177rvY53i0RAN3SPD5m3ctwaLb32pMYQ65nBdA'
-    })
-  //  return this.httpClient.post(`${ApiEndPoints.getQuestionSetHierarchyWithPost}`+'/'+identifier, payload, {headers:headers}); 
-   const hierarchy = this.httpClient.post(`${ApiEndPoints.getQuestionSetHierarchyWithPost}`+'/'+identifier, payload, {headers:headers});
+   const hierarchy = this.httpClient.post(`${ApiEndPoints.getQuestionSetHierarchy}`+'/'+identifier, payload);
     const questionSetResponse = this.httpClient.get(`${this.baseUrl}${ApiEndPoints.questionSetRead}${identifier}?fields=instructions`);
     return (
       forkJoin([hierarchy, questionSetResponse]).pipe(map((res: any) => {

@@ -40,11 +40,8 @@ export class McqComponent implements OnInit, AfterViewInit {
     if (this.question?.solutions) {
       this.solutions = this.question.solutions;
     }
-    // let key: any = this.utilService.getKeyValue(Object.keys(this.question.responseDeclaration));
-    // this.cardinality = this.question.responseDeclaration[key]['cardinality'];
-    //Remove below two lines once responseDeclaration property updated and uncomment above two lines
-    let key: any = 'response1';
-    this.cardinality = 'single';
+    let key: any = this.utilService.getKeyValue(Object.keys(this.question.responseDeclaration));
+    this.cardinality = this.question.responseDeclaration[key]['cardinality'];
 
     switch(this.question.templateId) {
       case "mcq-vertical": 
