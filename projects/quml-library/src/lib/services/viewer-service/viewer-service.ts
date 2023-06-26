@@ -56,7 +56,7 @@ export class ViewerService {
     this.isSectionsAvailable = parentConfig?.isSectionsAvailable;
     this.src = config.metadata.artifactUrl || '';
     this.questionSetId = config.metadata.identifier;
-    this.questionSetEvaluable = config.metadata?.serverEvaluable;
+    this.questionSetEvaluable = config.metadata?.eval?.mode?.toLowerCase() == 'server';
 
     /* istanbul ignore else */
     if (config?.context?.userData) {

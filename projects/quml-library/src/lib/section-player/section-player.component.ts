@@ -209,7 +209,7 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
     this.warningTime = this.sectionConfig.metadata?.timeLimits?.warningTime || 0;
     this.showTimer = this.sectionConfig.metadata?.showTimer?.toLowerCase() !== 'no';
     //server-level-validation
-    this.questionSetEvaluable = this.sectionConfig.metadata?.serverEvaluable;
+    this.questionSetEvaluable = this.sectionConfig.metadata?.eval?.mode?.toLowerCase() == 'server';
 
     if (this.sectionConfig.metadata?.showFeedback) {
       this.showFeedBack = this.sectionConfig.metadata?.showFeedback?.toLowerCase() !== 'no'; // prioritize the section level config

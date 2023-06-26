@@ -204,7 +204,7 @@ export class MainPlayerComponent implements OnInit, OnChanges {
     this.showEndPage = this.playerConfig.metadata?.showEndPage?.toLowerCase() !== 'no';
     this.parentConfig.showFeedback = this.showFeedBack = this.playerConfig.metadata?.showFeedback?.toLowerCase() === 'yes';
     this.parentConfig.sideMenuConfig = { ...this.parentConfig.sideMenuConfig, ...this.playerConfig.config.sideMenu };
-    this.questionSetEvaluable = this.playerConfig.metadata?.serverEvaluable;
+    this.questionSetEvaluable = this.playerConfig.metadata?.eval?.mode?.toLowerCase() == 'server';
     if (this.playerConfig?.context?.userData) {
       const firstName = this.playerConfig.context.userData?.firstName ?? '';
       const lastName = this.playerConfig.context.userData?.lastName ?? '';
@@ -275,10 +275,10 @@ export class MainPlayerComponent implements OnInit, OnChanges {
     }
     if (this.parentConfig.isSectionsAvailable) {
       const activeSectionIndex = this.getActiveSectionIndex();
-      this.setNextSection(event, activeSectionIndex);
       if(!this.questionSetEvaluable) {
         this.updateSectionScore(activeSectionIndex);
       }
+      this.setNextSection(event, activeSectionIndex);
     } else {
       this.prepareEnd(event);
     }
