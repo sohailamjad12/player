@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
   playerConfig: any;
   telemetryEvents: any = [];
   questionSetDetails: any;
-  questionSetEvaluable: boolean = false;
+  questionSetEvaluable: any;
   constructor(private dataService: DataService) { }
 
   ngOnInit() {
@@ -67,8 +67,9 @@ export class AppComponent implements OnInit {
       userID:'101ad6b3-502c-4ab4-a6cd-23d2ec7466b8',
       attemptID:uuid.v4(res.questionSet.identifier)
     }
-    this.questionSetEvaluable = res.questionSet?.eval?.mode.toLowerCase() == 'server';
-    if(this.questionSetEvaluable) {
+    this.questionSetEvaluable = JSON.parse(res.questionSet?.eval);
+    // this.questionSetEvaluable = res.questionSet?.eval?.mode.toLowerCase() == 'server';
+    if(this.questionSetEvaluable?.mode?.toLowerCase() == 'server') {
       this.dataService.getServerEvaluableQuestionSet(reqBody, res.questionSet.identifier).subscribe(res => {
         this.initializePlayer(res);
       });
