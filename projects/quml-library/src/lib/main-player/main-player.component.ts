@@ -204,12 +204,7 @@ export class MainPlayerComponent implements OnInit, OnChanges {
     this.showEndPage = this.playerConfig.metadata?.showEndPage?.toLowerCase() !== 'no';
     this.parentConfig.showFeedback = this.showFeedBack = this.playerConfig.metadata?.showFeedback?.toLowerCase() === 'yes';
     this.parentConfig.sideMenuConfig = { ...this.parentConfig.sideMenuConfig, ...this.playerConfig.config.sideMenu };
-    if(typeof this.playerConfig.metadata?.eval == 'string') {
-      this.questionSetEvaluable = JSON.parse(this.playerConfig.metadata?.eval);
-      this.questionSetEvaluable = this.questionSetEvaluable?.mode?.toLowerCase() == 'server'
-    } else {
-      this.questionSetEvaluable = this.playerConfig.metadata?.eval?.mode?.toLowerCase() == 'server'
-    }
+    this.questionSetEvaluable = this.viewerService.serverValidationCheck(this.playerConfig.metadata?.eval);
     if (this.playerConfig?.context?.userData) {
       const firstName = this.playerConfig.context.userData?.firstName ?? '';
       const lastName = this.playerConfig.context.userData?.lastName ?? '';
