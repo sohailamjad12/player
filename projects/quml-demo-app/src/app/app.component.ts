@@ -67,14 +67,18 @@ export class AppComponent implements OnInit {
       userID:'101ad6b3-502c-4ab4-a6cd-23d2ec7466b8',
       attemptID:uuid.v4(res.questionSet.identifier)
     }
-    this.questionSetEvaluable = JSON.parse(res.questionSet?.eval);
-    // this.questionSetEvaluable = res.questionSet?.eval?.mode.toLowerCase() == 'server';
-    if(this.questionSetEvaluable?.mode?.toLowerCase() == 'server') {
+    if(typeof res.questionSet?.eval == 'string') {
+      this.questionSetEvaluable = JSON.parse(res.questionSet?.eval);
+      this.questionSetEvaluable = this.questionSetEvaluable?.mode.toLowerCase() == 'server'
+    } else {
+      this.questionSetEvaluable = res.questionSet?.eval?.mode?.toLowerCase() == 'server'
+    }
+    if(this.questionSetEvaluable) {
       this.dataService.getServerEvaluableQuestionSet(reqBody, res.questionSet.identifier).subscribe(res => {
         this.initializePlayer(res);
       });
     } else {
-      this.dataService.getQuestionSet(this.contentId).subscribe(res => {
+      this.dataService.getQuestionSet(res.questionSet.identifier).subscribe(res => {
         this.initializePlayer(res);
       });
     }
