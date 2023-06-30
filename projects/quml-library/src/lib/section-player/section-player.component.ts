@@ -90,7 +90,7 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
   isAssessEventRaised = false;
   isShuffleQuestions = false;
   shuffleOptions: boolean;
-  questionSetEvaluable: boolean = false;
+  questionSetEvaluable: any;
 
   constructor(
     public viewerService: ViewerService,
@@ -209,7 +209,12 @@ export class SectionPlayerComponent implements OnChanges, AfterViewInit {
     this.warningTime = this.sectionConfig.metadata?.timeLimits?.warningTime || 0;
     this.showTimer = this.sectionConfig.metadata?.showTimer?.toLowerCase() !== 'no';
     //server-level-validation
-    this.questionSetEvaluable = this.sectionConfig.metadata?.eval?.mode?.toLowerCase() == 'server';
+    if(typeof this.sectionConfig.metadata?.eval == 'string') {
+      this.questionSetEvaluable = JSON.parse(this.sectionConfig.metadata?.eval);
+      this.questionSetEvaluable = this.questionSetEvaluable?.mode?.toLowerCase() == 'server'
+    } else {
+      this.questionSetEvaluable = this.sectionConfig.metadata?.eval?.mode?.toLowerCase() == 'server'
+    }
 
     if (this.sectionConfig.metadata?.showFeedback) {
       this.showFeedBack = this.sectionConfig.metadata?.showFeedback?.toLowerCase() !== 'no'; // prioritize the section level config

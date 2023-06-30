@@ -34,7 +34,7 @@ export class ViewerService {
   questionSetId: string;
   parentIdentifier: string;
   sectionQuestions = [];
-  questionSetEvaluable: boolean = false;
+  questionSetEvaluable: any;
 
   constructor(
     public qumlLibraryService: QumlLibraryService,
@@ -56,7 +56,13 @@ export class ViewerService {
     this.isSectionsAvailable = parentConfig?.isSectionsAvailable;
     this.src = config.metadata.artifactUrl || '';
     this.questionSetId = config.metadata.identifier;
-    this.questionSetEvaluable = config.metadata?.eval?.mode?.toLowerCase() == 'server';
+    if(typeof config.metadata?.eval == 'string') {
+      this.questionSetEvaluable = JSON.parse(config.metadata?.eval);
+      this.questionSetEvaluable = this.questionSetEvaluable?.mode?.toLowerCase() == 'server'
+    } else {
+      this.questionSetEvaluable = config.metadata?.eval?.mode?.toLowerCase() == 'server'
+    }
+    
 
     /* istanbul ignore else */
     if (config?.context?.userData) {
